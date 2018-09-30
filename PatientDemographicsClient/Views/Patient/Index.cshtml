@@ -1,0 +1,178 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Patient Details</h2>
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<table id="tab1" width="500px" border="1">
+    <tr>
+        @*<th>ID</th>*@
+        <th>Forenames</th>
+        <th>Surname</th>
+        <th>DOB</th>
+        <th>Gender</th>
+        <th>HomeNumber</th>
+        <th>WorkNumber</th>
+        <th>MobileNumber</th>
+    </tr>
+</table>
+<div style="margin:10px;">
+    <table border="1">
+        <tr>
+            <td><span style="color:red">*</span> Forenames :</td>
+            <td><input type="text" name="Forenames" id="Forenames" value="" maxlength="50" /></td>
+        </tr>
+        <tr>
+            <td><span style="color:red">*</span> Surname :</td>
+            <td><input type="text" name="Surname" id="Surname" value="" maxlength="50" /></td>
+        </tr>
+        <tr>
+            <td> DOB :</td>
+            <td><input type="date" name="Forenames" id="DOB" value="" /></td>
+        </tr>
+        <tr>
+            <td><span style="color:red">*</span> Gender :</td>
+            <td>
+                <input type="radio" name="gender" value="male" checked> Male<br>
+                <input type="radio" name="gender" value="female"> Female<br>
+                @*<input type="text" name="Forenames" id="Gender" value="" required />*@
+            </td>
+        </tr>
+        <tr>
+            <td> HomeNumber :</td>
+            <td><input type="text" name="HomeNumber" id="HomeNumber" value="" /></td>
+        </tr>
+        <tr>
+            <td> WorkNumber :</td>
+            <td><input type="text" name="WorkNumber" id="WorkNumber" value="" /></td>
+        </tr>
+        <tr>
+            <td> MobileNumber :</td>
+            <td><input type="text" name="MobileNumber" id="MobileNumber" value="" /></td>
+        </tr>
+        <tr>
+            <td colspan="2" align="center">
+                <input type="button" name="btn" id="btn1" value="Add Patient " />
+                @*<input type="button" name="btn2" id="btn2" value="Delete Patient " />
+
+                    <input type="button" name="btn3" id="btn3" value="Update Patient " />*@
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" align="center">
+                <label id="message"></label>
+            </td>
+        </tr>
+    </table>
+
+</div>
+<script>
+    function LoadData() {
+        $("#tab1").css("display", "none");
+        $.getJSON("http://localhost:55889/api/patients/", function (data) {
+            $("#tab1").css("display", "inline-table");
+            $.each(data, function (key, val) {
+                $("<tr><td>" + val.Forenames + "</td><td>" + val.Surname + "</td><td>" + val.DOB + "</td><td>" + val.Gender + "</td><td>" + val.HomeNumber + "</td><td>" + val.WorkNumber + "</td><td>" + val.MobileNumber + "</td></tr>").appendTo($("#tab1"));
+
+
+            })
+        })
+    }
+    var Validation = 1;
+    function RequiredValidate() {
+        let reqMessage = "";
+        if ($("#Forenames").val() == "") {
+            reqMessage = reqMessage + '\r\n' + 'Forenames is mandatory.'
+
+        }
+        if ($("#Forenames").val().length < 3) {
+            reqMessage = reqMessage + '\r\n' + 'Forenames should be min 3 character and max 50 characters.'
+
+        }
+        if ($("#Surname").val() == "") {
+            reqMessage = reqMessage + '\r\n' + 'Surname is mandatory.'
+
+        }
+        if ($("#Surname").val().length < 2) {
+            reqMessage = reqMessage + '\r\n' + 'Surname should be min 2 character and max 50 characters.'
+
+        }
+        if (reqMessage.length > 1) {
+            alert(reqMessage);
+            Validation = 0;
+            return false;
+        }
+        else {
+            Validation = 1;
+            return true;
+        }
+    }
+    
+    function clearValues() {
+        $("#Forenames").val('');
+        $("#Surname").val('');
+        $("#DOB").val('');
+        $("#HomeNumber").val('');
+        $("#WorkNumber").val('');
+        $("#MobileNumber").val('');
+    }
+    $(document).ready(function () {
+        LoadData();
+
+        //POST
+        $("#btn1").click(function () {
+            RequiredValidate();
+            if (Validation == 0)
+                return false;
+            //var Forenames = $("#Forenames").val();
+            //var Surname = $("#Surname").val();
+            //var DOB = $("#DOB").val();
+            //var Gender = $("#Gender").val();
+            //var HomeNumber = $("#HomeNumber").val();
+            //var WorkNumber = $("#WorkNumber").val();
+            //var MobileNumber = $("#MobileNumber").val();
+
+            $.ajax({
+                type: "POST",
+                contentType: "application/json;charset=utf-8",
+                url: "http://localhost:55889/api/patients/",
+                data: JSON.stringify({
+                    Forenames: $("#Forenames").val(),
+                    Surname: $("#Surname").val(),
+                    DOB: $("#DOB").val(),
+                    Gender: $('input:radio[name=gender]:checked').val(),
+                    HomeNumber: $("#HomeNumber").val(),
+                    WorkNumber: $("#WorkNumber").val(),
+                    MobileNumber: $("#MobileNumber").val()
+
+                }),
+
+                dataType: "JSON",
+
+                success: function (data) {
+                    clearValues();
+                    //$('#message').val("Record inserted Successfully");
+                    $("#tab1").find("tr:gt(0)").remove();
+                    $.getJSON("http://localhost:55889/api/patients/", function (data) {
+                        $("#tab1").css("display", "inline-table");
+                        $.each(data, function (key, val) {
+                            $("<tr><td>" + val.Forenames + "</td><td>" + val.Surname + "</td><td>" + val.DOB + "</td><td>" + val.Gender + "</td><td>" + val.HomeNumber + "</td><td>" + val.WorkNumber + "</td><td>" + val.MobileNumber + "</td></tr>").appendTo($("#tab1"));
+
+
+                        })
+
+                    })
+
+
+
+                }
+            });
+
+
+        })
+        
+    });
+
+</script>
